@@ -54,21 +54,23 @@ class Lonstations(object):
         print "The number of bike share stations is %s." % count
         return count
     # Rental Id,Duration,Bike Id,End Date,EndStation Id,EndStation Name,Start Date,StartStation Id,StartStation Name
+    """Duration","Start Date","End Date","StartStation Name",,"EndStation Name","Bike Id"""
+    """
+    "start_name": parsed["StartStation Name"],
+    "end_name": parsed["EndStation Name"],
+    "trip_duration": parsed["Duration"],
+    "start_time": parsed["Start Date"],
+    "end_time": parsed["End Date"],
+    "bike_id": parsed["Bike Id"]
+    """
     def get_trips(self, data_path):
         parsed = pd.read_csv(data_path,
-            usecols=[  "Duration","Start Date","End Date",
-                      "StartStation Id","StartStation Name",
-                      "EndStation Id","EndStation Name",
-                      "Bike Id"])
+            usecols=[  
+                      "StartStation Id",
+                      "EndStation Id"])
         self.trips = pd.DataFrame({
             "start_id": parsed["StartStation Id"],
-            "start_name": parsed["StartStation Name"],
-            "end_id": parsed["EndStation Id"],
-            "end_name": parsed["EndStation Name"],
-            "trip_duration": parsed["Duration"],
-            "start_time": parsed["Start Date"],
-            "end_time": parsed["End Date"],
-            "bike_id": parsed["Bike Id"]
+            "end_id": parsed["EndStation Id"]
         })
         return self
     def get_counts(self, data_path):
@@ -91,23 +93,28 @@ class NYCstations(Lonstations):
         self.stations = 0
         self.trips = 0
         self.trip_counts = 0
+    """
+    "tripduration","starttime","stoptime",
+                          "start station id","start station name",
+                          "start station latitude","start station longitude",
+                          "end station id","end station name",
+                          "end station latitude","end station longitude",
+                          "bikeid","usertype","birth year","gender"
+    "start_id": parsed["start station id"],
+    "start_name": parsed["start station name"],
+    "end_id": parsed["end station id"],
+    "end_name": parsed["end station name"],
+    "trip_duration": parsed["tripduration"],
+    "start_time": parsed["starttime"],
+    "end_time": parsed["stoptime"],
+    "bike_id": parsed["bikeid"]
+    """
     def get_trips(self, data_path):
         parsed = pd.read_csv(data_path,
-            usecols=[  "tripduration","starttime","stoptime",
-                      "start station id","start station name",
-                      "start station latitude","start station longitude",
-                      "end station id","end station name",
-                      "end station latitude","end station longitude",
-                      "bikeid","usertype","birth year","gender"])
+            usecols=["end station id","start station id"])
         self.trips = pd.DataFrame({
             "start_id": parsed["start station id"],
-            "start_name": parsed["start station name"],
-            "end_id": parsed["end station id"],
-            "end_name": parsed["end station name"],
-            "trip_duration": parsed["tripduration"],
-            "start_time": parsed["starttime"],
-            "end_time": parsed["stoptime"],
-            "bike_id": parsed["bikeid"]
+            "end_id": parsed["end station id"]
         })
         return self
     def get_counts(self, data_path):
