@@ -51,7 +51,7 @@ class Lonstations(object):
         self.trip_counts = 0
     def get_stations(self, data_path):
         parsed = pd.read_csv(data_path,
-            usecols=["id"," lat"," long"," name"])
+            usecols=["id","lat","long","name"])
         self.stations = pd.DataFrame({
             "id": parsed["id"],
             "name": parsed[" name"],
