@@ -33,6 +33,16 @@ city = args.city
 trips_folder = args.directory
 stations_file = args.stations
 
+"""
+city = "london"
+trips_folder = "/Users/colinbroderick/repos/bike-correlations/data/barclayscyclehireusagestats/"
+stations_file = "/Users/colinbroderick/repos/temp/bike-correlations/data/station_latlons_london.txt"
+
+city = "nyc"
+trips_folder = "/Users/colinbroderick/repos/bike-correlations/data/nyc/citi_bike_usage_stats/"
+stations_file = "/Users/colinbroderick/repos/temp/bike-correlations/data/station_latlons_nyc.txt"
+
+"""
 # trips and stations
 class Lonstations(object):
     def __init__(self):
@@ -54,15 +64,6 @@ class Lonstations(object):
         print "The number of bike share stations is %s." % count
         return count
     # Rental Id,Duration,Bike Id,End Date,EndStation Id,EndStation Name,Start Date,StartStation Id,StartStation Name
-    """Duration","Start Date","End Date","StartStation Name",,"EndStation Name","Bike Id"""
-    """
-    "start_name": parsed["StartStation Name"],
-    "end_name": parsed["EndStation Name"],
-    "trip_duration": parsed["Duration"],
-    "start_time": parsed["Start Date"],
-    "end_time": parsed["End Date"],
-    "bike_id": parsed["Bike Id"]
-    """
     def get_trips(self, data_path):
         parsed = pd.read_csv(data_path,
             usecols=[  
@@ -93,22 +94,6 @@ class NYCstations(Lonstations):
         self.stations = 0
         self.trips = 0
         self.trip_counts = 0
-    """
-    "tripduration","starttime","stoptime",
-                          "start station id","start station name",
-                          "start station latitude","start station longitude",
-                          "end station id","end station name",
-                          "end station latitude","end station longitude",
-                          "bikeid","usertype","birth year","gender"
-    "start_id": parsed["start station id"],
-    "start_name": parsed["start station name"],
-    "end_id": parsed["end station id"],
-    "end_name": parsed["end station name"],
-    "trip_duration": parsed["tripduration"],
-    "start_time": parsed["starttime"],
-    "end_time": parsed["stoptime"],
-    "bike_id": parsed["bikeid"]
-    """
     def get_trips(self, data_path):
         parsed = pd.read_csv(data_path,
             usecols=["end station id","start station id"])
@@ -171,7 +156,7 @@ elif isinstance(filenames, basestring):
 else:
     print "There is a problem with your directory or file."
     sys.exit(1)
-    
+
 # combine all the trips into one file
 df = pd.concat(all_trips)
 
@@ -189,38 +174,15 @@ count_no_station = 0
 trips_c_list= []
 trips_t_list= []
 # loop to run through trips for every station
-for i, v in london_stations.iterrows():
-    # i = the index of station row
-    # v [0] the actual value of the station_id
-    #print "Checking Station No: %s " % v[0]
-    x = i
-    stat = v[0]
-    # Get the trips from station_id above to and from this to every station
-    # EX: df.query('start_id == 72 and start_id != end_id and end_id != start_id').groupby('end_id')[['end_id']].size()
-    s0 = df.query('start_id == @stat and start_id != end_id and end_id != start_id').groupby('end_id')[['end_id']].size()
-    s1 = df.query('end_id == @stat and end_id != start_id and start_id != end_id').groupby('start_id')[['start_id']].size()
-    
-    # Purpose is to index these properly
-    # Sum indivudual trips to and from each station
-    trips_count = s0
-    trips_count_to = s1
-    
-    for row in trips_count.iteritems():
-        trips_c_list.append([stat, row[0],row[1]])
-    
-    for row in trips_count_to.iteritems():
-        trips_t_list.append([stat, row[0],row[1]])
-
-print "There were %s trip pairs between the stations." % (len(trips_c_list) + len(trips_t_list))
-print "There were %s destination stations not in stations list \n" % count_no_station
-
-# Create new dataframes of trips from and trips to.
-trip_counts_from = pd.DataFrame(trips_c_list, columns=['start_id', 'end_id', 'num_trips'])
-trip_counts_to = pd.DataFrame(trips_t_list, columns=['start_id', 'end_id', 'num_trips'])
-
 # sum up the trip counts for each station
-counts_from_each = trip_counts_from.groupby(['start_id', 'end_id']).sum()
-counts_to_each = trip_counts_to.groupby(['start_id', 'end_id']).sum()
+counts_from_each = df.query('start_id != end_id and end_id != start_id').groupby(['start_id',"end_id"]).size()
+counts_to_each = df.query('end_id != start_id and start_id != end_id').groupby(['end_id',"start_id"]).size()
+
+counts_from_each = pd.DataFrame(counts_from_each)
+
+print "Trips From: %s" % counts_from_each.sum()
+print "Trips To: %s" % counts_to_each.sum()
+print "Total: %s" % (counts_to_each.sum() + counts_from_each.sum())
 
 # render as a flat square list
 unstack_counts_f = counts_from_each.unstack()
@@ -228,12 +190,15 @@ unstack_counts_t = counts_to_each.unstack()
 
 # There are some stations missing from the london stations file present in the trips OD data.
 if city == "london" or city == "boris":
-    #remove station 241
+    #remove station 241 first
     unstack_counts_f = unstack_counts_f.drop(unstack_counts_f.columns[238], axis=1)
-    #remove station 0
+    #remove station 0 col
     unstack_counts_f = unstack_counts_f.drop(unstack_counts_f.columns[0], axis=1)
+    #remove station 0 and 241 rows
+    unstack_counts_t = unstack_counts_t.drop(unstack_counts_t.index[238])
+    unstack_counts_t = unstack_counts_t.drop(unstack_counts_t.index[0])
 
-# Unstack and totals save to csv files
+# Unstack and totals save to csv files"""
 unstack_counts_f.to_csv("total_from.csv")
 unstack_counts_t.to_csv("total_to.csv")
 
