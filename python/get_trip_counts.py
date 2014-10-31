@@ -139,14 +139,15 @@ elif city == "boris":
 path = os.path.abspath(os.path.dirname(trips_folder))
 # get all the filenames ending in .csv
 filenames = glob.glob(path + "/*.csv")
+filenames.remove (filenames [32]) # temp avoid problem file
 
 all_trips = []
 print "%s trips files \n" % len(filenames)
 # if only one file in folder possibly a string.
 # check to make sure that the filenames is either a list or a string.
 if isinstance(filenames, list):
-    for file in filenames:
-        print "Reading File %s...." % file
+    for idx, file in enumerate (filenames):
+        print "Reading File %s / %s = %s ...." % (idx, len (filenames), file)
         london.get_trips(file)
         all_trips.append(london.trips)
 elif isinstance(filenames, basestring):
