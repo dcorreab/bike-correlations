@@ -51,12 +51,12 @@ class Lonstations(object):
         self.trip_counts = 0
     def get_stations(self, data_path):
         parsed = pd.read_csv(data_path,
-            usecols=["id","lat","long","name"])
+            usecols=["id","lat","long", "name"])
         self.stations = pd.DataFrame({
             "id": parsed["id"],
-            "name": parsed[" name"],
-            "lat": parsed[" lat"],
-            "lng": parsed[" long"]
+            "name": parsed["name"],
+            "lat": parsed["lat"],
+            "lng": parsed["long"]
         }).groupby("id").first().reset_index()
         return self
     def count_stations(self):
@@ -139,7 +139,8 @@ elif city == "boris":
 path = os.path.abspath(os.path.dirname(trips_folder))
 # get all the filenames ending in .csv
 filenames = glob.glob(path + "/*.csv")
-filenames.remove (filenames [32]) # temp avoid problem file
+if city == "london" or city == "boris":
+    filenames.remove (filenames [32]) # temp avoid problem file
 
 all_trips = []
 print "%s trips files \n" % len(filenames)
