@@ -201,7 +201,7 @@ if city == "london" or city == "boris":
     unstack_counts_t = unstack_counts_t.drop(unstack_counts_t.index[0])
 
 # Unstack and totals save to csv files"""
-unstack_counts_f.to_csv("total_from.csv")
-unstack_counts_t.to_csv("total_to.csv")
+unstack_counts_f.to_csv("../results/%s_total_from.csv" % (city))
+unstack_counts_t.to_csv("../results/%s_total_to.csv" % (city))
 
 # Move to next step to calculate the linear regressions between all rows and all columns in file reg1.py.
