@@ -33,9 +33,9 @@ def findMissingDists (city):
     csv = pd.read_csv (fname)
     st = pd.DataFrame ({
         'id': csv ['id'],
-        'lat': csv [' lat'],
-        'lon': csv [' long'],
-        'name': csv [' name']})
+        'lat': csv ['lat'],
+        'lon': csv ['long'],
+        'name': csv ['name']})
     n = len (st)
     stcheck = np.zeros ([n, n])
     # Then make a reverse lookup table to replace station numbers with corresponding
