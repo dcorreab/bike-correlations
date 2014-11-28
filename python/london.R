@@ -15,7 +15,7 @@ ldm <- data.matrix(lon_d)
 r <- list ()
 r [[1]] <- ltc
 r [[2]] <- ltr
-jpeg (filename="../results/al/lon_r2plots1.jpg", width=1200,
+jpeg (filename="lon_r2plots.jpg", width=1200,
       height=700, type="cairo")
 par (mfrow=c(1,2))
 mts <- c ("cols", "rows")

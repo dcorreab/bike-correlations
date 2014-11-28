@@ -7,7 +7,6 @@ nyc_tr <- read.csv("../results/nyc_to_rows.csv", row.names=1)
 nyc_d <- read.csv("../data/nyc_d_matrix.csv", skip=1, row.names=1)
 nyc_d <- nyc_d[-c(1),] # remove empty start_id row
 
-
 ntc <- data.matrix(nyc_tc)
 ntr <- data.matrix(nyc_tr)
 ndm <- data.matrix(nyc_d)
@@ -15,7 +14,7 @@ ndm <- data.matrix(nyc_d)
 r <- list ()
 r [[1]] <- ntc
 r [[2]] <- ntr
-jpeg (filename="../results/al/nyc_r2plots.jpg", width=1200,
+jpeg (filename="nyc_r2plots.jpg", width=1200,
       height=700, type="cairo")
 par (mfrow=c(1,2))
 mts <- c ("cols", "rows")
