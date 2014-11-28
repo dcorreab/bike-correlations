@@ -108,7 +108,7 @@ def get_r2_cor(boom1):
     r2_cols.index = rows
     r2_cols.columns = cols
     
-    r2_rows = pd.DataFrame(col_r2vals)
+    r2_rows = pd.DataFrame(row_r2vals)
     r2_rows = r2_rows.drop(r2_rows.index[0])
     r2_rows.index = rows
     r2_rows.columns = cols
