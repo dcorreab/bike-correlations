@@ -89,11 +89,11 @@ def get_r2_cor(boom1):
         #cr2_vals.append(boom1.columns[row])
         for i in range(0, len(boom1)-1):
             # rows
-            y = boom1.iloc[i+1]
+            y = boom1.iloc[i]
             slope, intercept, r_value, p_value, std_err = sp.stats.linregress(xi,y)
             r2_vals.append(r_value**2)
             # cols
-            yc = boom1.iloc[:,i+1]
+            yc = boom1.iloc[:,i]
             slope, intercept, r_value, p_value, std_err = sp.stats.linregress(xic,yc)
             cr2_vals.append(r_value**2)
         row_r2vals.append(r2_vals)
