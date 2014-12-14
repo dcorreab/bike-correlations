@@ -7,9 +7,9 @@
 # coordinates. Now it just needs to be extended to calculate all distances
 # between all pairs in station_latlons ...
 import os, time, subprocess
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup  
 
-def checkPlanetSplitter (city="london"):
+def checkPlanetSplitter (city="nyc"):
     # Run planetsplitter if .mem files don't exist for city. Also unzips OSM
     # file if still in .bz2 format
     files = os.listdir (".") # from /src
@@ -20,29 +20,29 @@ def checkPlanetSplitter (city="london"):
         city = "nyc"
         prfx = "ny"
     # First unzip
-    datadir = "/data/data/bikes/"
+    datadir = "../data/"
     dfiles = os.listdir (datadir)
     fcheck = any (f.find (city) > -1 and f.endswith(".osm") for f in dfiles)
     if not any (f.find(city) > -1 and f.endswith (".osm") for f in dfiles):
         bf = [f for f in dfiles if f.find (city) > -1 and f.endswith (".bz2")]
         if not bf:
-            print "ERROR: %s.bz2 file does not exist to unzip"
+            print "ERROR: %s.bz2 file does not exist to unzip" % bf 
             # TODO: exception handler
         else:
             bf = datadir + bf [0]
             args = ["bunzip2", bf]
-            print "Unzipping planet-%s-.osm ... " % city
+            print "Unzipping planet-%s.osm ... " % city
             subprocess.Popen (args)
     if not any (f.startswith(prfx) and f.endswith(".mem") for f in files):
         planetfile = datadir + "planet-" + city + ".osm"
-        args = ["./../../routino-2.7.2/src/planetsplitter", "--prefix=" + prfx,\
-                "--tagging=../../routino-2.7.2/xml/routino-tagging.xml",\
+        args = ["/Users/colinbroderick/Downloads/routino-2.7.2/src/planetsplitter", "--prefix=" + prfx,\
+                "--tagging=/Users/colinbroderick/Downloads/routino-2.7.2/xml/routino-tagging.xml",\
                 planetfile]
         print "planet-%s.osm not yet split. Running planetsplitter..." % city
         subprocess.Popen (args)
 
-def getBounds (city="london"):
-    wd = '/data/data/bikes/'
+def getBounds (city="nyc"):
+    wd = '../data/'
     if city == "london": fname = wd + 'planet-london.osm'
     else: fname = wd + 'planet-nyc.osm'
     with open (fname) as f:
@@ -65,7 +65,7 @@ def getAllNodes (city="london"):
     lats = []
     lons = []
     count = 0
-    wd = '/data/data/bikes/'
+    wd = '../data/'
     if city == "london": fname = wd + 'planet-london.osm'
     else: fname = wd + 'planet-nyc.osm'
     with open (fname) as f:
