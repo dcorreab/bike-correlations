@@ -81,14 +81,12 @@ def getAllNodes (city="london"):
                 #lons.append (float (node.attrs ["lon"]))
                 # So values are directly stripped instead. Note that this
                 # requires lines to be ordered (id,lat,lon,version).
-                print line
                 id = line.split ("id=")[1].split ("lat=")[0]
-                print ids
-                ids.append (int (id.strip("' ").strip('" ')))
+                ids.append (int (id.split('"')[1].strip("' ").strip('" ')))
                 lat = line.split ("lat=")[1].split ("lon=")[0]
                 lats.append (float (lat.strip("' ").strip('" ')))
                 lon = line.split ("lon=")[1].split ("version=")[0]
-                lons.append (float (lon.strip("' ").strip('" ')))
+                lons.append (float (lon.split('"')[1].strip("' ").strip('" ')))
     end = time.time ()
     print len (ids), " nodes extracted in ", end - start, "s."
     return zip (ids, lats, lons)
