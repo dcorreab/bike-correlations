@@ -21,14 +21,14 @@ def getDist (html):
         dtot = dtot + float (di.split ("km") [0])
     return dtot
 
-def getLatLons (city="london"):
+def getLatLons (city="nyc"):
     ids = []
     lats = []
     lons = []
     if city.lower () [0] == "l":
         fname = "../data/station_latlons_london.txt"
     else:
-        fname = "../data/station_latlons_nyc.txt"
+        fname = "../data/station_latlons_nyc_small.txt"
     with open(fname,'r') as f:
         for line in f:
             ls=line.split (",")
@@ -38,7 +38,7 @@ def getLatLons (city="london"):
                 lons.append (float (ls [2]))
     return zip (ids, lats, lons)
 
-def writeDMat (latlons, nodes, city="london"):
+def writeDMat (latlons, nodes, city="nyc"):
     n = len (latlons) # number of calcultions < n
     ntot = n * (n - 1) / 2 # number of comparisons
     # create index into upper triangle excluding diagonal
@@ -51,7 +51,7 @@ def writeDMat (latlons, nodes, city="london"):
         fname = '../results/station_dists_london.txt'
         city = "london"
     else:
-        fname = '../results/station_dists_nyc.txt'
+        fname = '../results/station_dists_nyc_small.txt'
         city = "nyc"
     f = open (fname, 'a+')
     for line in f:
