@@ -43,43 +43,47 @@ void getDir (std::vector <std::string>* filelist)
     in_file.close ();
 }
 
+
 /************************************************************************
  ************************************************************************
  **                                                                    **
- **                         GETNUMSTATIONS                             **
+ **                         GETSTATIONINDX                             **
  **                                                                    **
  ************************************************************************
  ************************************************************************/
 
-int getNumStations ()
+int getStationIndex (std::string city, intPair* stationIndex)
 {
     const std::string dir = "./data/";
     int tempi, ipos, count = 0, nstations = 0;
     std::string fname;
     std::ifstream in_file;
     std::string linetxt;
+    (*stationIndex).resize (0);
 
-    fname = dir + "station_latlons_london.txt";
+    fname = dir + "station_latlons_" + city + ".txt";
     in_file.open (fname.c_str (), std::ifstream::in);
     if (in_file.fail ()) {
-        std::cout << "***ERROR: Failed to read `station_latlons_london.txt'***" << 
+        std::cout << "***ERROR: Failed to read `station_latlons.txt'***" << 
             std::endl;
     } else {
         getline (in_file, linetxt, '\n');
         count = 0;
-        while (getline (in_file, linetxt, '\n')) { count++;	}
+        while (getline (in_file, linetxt, '\n')) count++;	
         in_file.clear ();
         in_file.seekg (0); // Both lines needed to rewind file.
         for (int i=0; i<=count; i++) {
             getline (in_file, linetxt,'\n');
             ipos = linetxt.find(',',0);
             tempi = atoi (linetxt.substr (0, ipos).c_str());
+            (*stationIndex).push_back (std::make_pair (i, tempi));
+            //(*index).emplace_back (count, tempi);
             if (tempi > nstations) nstations = tempi;
         }
         in_file.close();
     }
 
-    return nstations;
+    return 0;
 } // end function getNumStations
 
 
@@ -91,7 +95,7 @@ int getNumStations ()
  ************************************************************************
  ************************************************************************/
 
-void readLatLons (dvec* lons, dvec* lats)
+void readLatLons (dvec* lons, dvec* lats, intPair* stationIndex)
 {
     // Presumes file existence confirmed with getNumStations
     const std::string dir = "./data/";
