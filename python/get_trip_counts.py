@@ -180,7 +180,7 @@ trips_t_list= []
 counts_from_each = df.query('start_id != end_id and end_id != start_id').groupby(['start_id',"end_id"]).size()
 counts_to_each = df.query('end_id != start_id and start_id != end_id').groupby(['end_id',"start_id"]).size()
 
-counts_from_each = pd.DataFrame(counts_from_each)
+#counts_from_each = pd.DataFrame(counts_from_each)
 
 print "Trips From: %s" % counts_from_each.sum()
 print "Trips To: %s" % counts_to_each.sum()
@@ -200,8 +200,16 @@ if city == "london" or city == "boris":
     unstack_counts_t = unstack_counts_t.drop(unstack_counts_t.index[238])
     unstack_counts_t = unstack_counts_t.drop(unstack_counts_t.index[0])
 
-# Unstack and totals save to csv files"""
-unstack_counts_f.to_csv("../results/%s_total_from.csv" % (city))
-unstack_counts_t.to_csv("../results/%s_total_to.csv" % (city))
+#using numpy get the lower trinangular of both counts and put in the upper using transpose.
+froms = np.tril(unstack_counts_f) + np.tril(unstack_counts_f).T
+tos = np.tril(unstack_counts_t) + np.tril(unstack_counts_t).T
+
+# add the indexs of the station ids back on as col/row names.
+froms = pd.DataFrame(froms, index = unstack_counts_f.index.values, columns = unstack_counts_f.columns.values)
+tos = pd.DataFrame(tos, index = unstack_counts_t.index.values, columns = unstack_counts_t.columns.values)
+
+# Save to csv files
+froms.to_csv("../results/%s_total_from.csv" % (city))
+tos.to_csv("../results/%s_total_to.csv" % (city))
 
 # Move to next step to calculate the linear regressions between all rows and all columns in file reg1.py.
