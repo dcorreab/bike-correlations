@@ -24,9 +24,10 @@ if city == 'boris':
 print "Loading Trips..."
 print "Loading Trips From...\t total_from.csv"
 print "Loading Trips TO...\t total_to.csv"
-trips_from = pd.read_csv('../results/%s_total_from.csv' % city, header=1, skiprows=[2]).set_index('end_id').fillna(0)
+#trips_from = pd.read_csv('../results/%s_total_from.csv' % city, header=1, skiprows=[2]).set_index('end_id').fillna(0)
+trips_from = pd.read_csv('../results/%s_total_from.csv' % city, header=0, index_col=0).fillna(0)
 # no need to skip rows
-trips_to = pd.read_csv('../results/%s_total_to.csv' % city, header=0).set_index('end_id').fillna(0)
+trips_to = pd.read_csv('../results/%s_total_to.csv' % city, header=0, index_col=0).fillna(0)
 
 """
 NOTES:
@@ -87,7 +88,7 @@ def get_r2_cor(boom1):
         xic = boom1.iloc[:,row]
         cr2_vals = []
         #cr2_vals.append(boom1.columns[row])
-        for i in range(0, len(boom1)-1):
+        for i in range(0, len(boom1)):
             # rows
             y = boom1.iloc[i]
             slope, intercept, r_value, p_value, std_err = sp.stats.linregress(xi,y)

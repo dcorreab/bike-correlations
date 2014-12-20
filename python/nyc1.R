@@ -1,21 +1,30 @@
 library(sp)
 library(rgdal)
 library(gstat)
-# cols
+library(automap)
+# trips to
 nyc_tc <- read.csv("../results/nyc_to_cols.csv", row.names=1)
-nyc_fc <- read.csv("../results/nyc_from_cols.csv", row.names=1)
-# rows
 nyc_tr <- read.csv("../results/nyc_to_rows.csv", row.names=1)
+
+ntc <- data.matrix(nyc_tc)
+row.names(ntc) <- colnames(ntc)
+ntr <- data.matrix(nyc_tr)
+row.names(ntr) <- colnames(ntr)
+
+# trips from
+nyc_fc <- read.csv("../results/nyc_from_cols.csv", row.names=1)
 nyc_fr <- read.csv("../results/nyc_from_rows.csv", row.names=1)
+
+nfc <- data.matrix(nyc_fc)
+row.names(nfc) <- colnames(nfc)
+
+nfr <- data.matrix(nyc_fr)
+row.names(nfr) <- colnames(nfr)
+
 # distance matrix
 nyc_d <- read.csv("../data/nyc_d_matrix.csv", skip=1, row.names=1)
 nyc_d <- nyc_d[-c(1),] # remove empty start_id row
 
-ntc <- data.matrix(nyc_tc)
-ntr <- data.matrix(nyc_tr)
-
-nfc <- data.matrix(nyc_fc)
-nfr <- data.matrix(nyc_fr)
 
 ndm <- data.matrix(nyc_d)
 ndm1 <- data.matrix(nyc_d)
@@ -30,13 +39,7 @@ mod1.nls <- function(city_r,i,ks) {
 	dvec <- dvec [indx]
 	rvec <- rvec [indx]
 	d <- log10(dvec)
-	ff <- seq(from=0, to=1, length=100)
 	mod <- tryCatch( nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.8,k=ks), trace=F), error=function(e) NULL)
-	"if (is.null(mod)) {
-		sapply(ff, function(x){
-			mod <- tryCatch( nls(rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.8,k=x[[x]]), trace=F), error=function(e) NULL)
-		})
-	}"
 	if (is.null(mod)) {
 		ks=0.5
 		
@@ -82,8 +85,27 @@ mod1.nls <- function(city_r,i,ks) {
 		
 		mod <- tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.8,k=ks), trace=F), error=function(e) NULL)
 	}
+	if (is.null(mod)) {
+		ks=0.2
+		mod <- tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.01,k=ks), trace=F), error=function(e) NULL)
+	}
+	if (is.null(mod)) {
+		ks=0.4
+		mod <- tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.1,k=ks), trace=F), error=function(e) NULL)
+	}
 	k <- 10 ^ summary (mod)$parameters [3]
 }
+
+#print(i)
+#print(length(ntc[i,]) == length(ldm1[i,]))
+#i = 100
+#dvec <- as.vector (ndm1[i,])
+#rvec <- as.vector (city_r[i,])
+#indx <- which (!is.na (dvec) & !is.na (rvec) & dvec > 0)
+#dvec <- dvec [indx]
+#rvec <- rvec [indx]
+#d <- log10(dvec)
+#mod <- nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=1,k=0.69), trace=T)
 
 ntc_k <- numeric()
 for (i in 1:332) {
@@ -140,7 +162,7 @@ make_maps <- function(kv,i){
 	y.range <- as.integer(range(ks_proj@coords[,2]))
 	
 	## now expand to a grid with 500 meter spacing:
-	grd <- expand.grid(x=seq(from=x.range[1], to=x.range[2], by=100), y=seq(from=y.range[1], to=y.range[2], by=100) )
+	grd <- expand.grid(x=seq(from=x.range[1], to=x.range[2], by=50), y=seq(from=y.range[1], to=y.range[2], by=50) )
 
 	## convert to SpatialPixel class
 	coordinates(grd) <- ~ x+y
@@ -158,27 +180,72 @@ make_maps <- function(kv,i){
 	clip_grid = grd[!is.na(over(grd, geometry(shape_p))),]
 	
 	## make gstat object:ks_proj1
-	g <- gstat(id="kval", formula=kval ~ 1, data=ks_proj)
+	g <- gstat(id="kval", formula=log(kval) ~ 1, data=ks_proj, maxdist=18000)
+	
+	#x <- variogram(kval ~ 1, ks_proj, cutoff=30000, width=100)
+	#g.vgm3 <- vgm(psill=4, model="Gau", range=3000, nugget=6)
+	#plot(x, model=g.vgm3, col='black')
+	
+	#g.krige <- krige(kval~1, ks_proj, clip_grid, model=g.vgm3, beta=mean(ks_proj$kval))
 	
 	v <- variogram(g, alpha=c(0,45,90,135))
-	v.fit <- fit.variogram(v, model=vgm(model='Gau', range=2000,width=3.38, nugget=2, psill=9.38))
-		
-	g <- gstat(g, id="kval", model=v.fit )
-	p <- predict(g, model=v.fit, newdata=clip_grid)
+	v.fit <- fit.variogram(v, model=vgm(model='Gau', range=7000, nugget=6, sill=var(ks$kval)))
 	
+	
+	#plot(v, model=v.fit, as.table=TRUE)
+	
+	#m <- vgm(var(ks$kval), "Gau", 2000, 50)
+	
+	
+	#plot(v, model=v.fit, as.table=TRUE)
+	#g <- gstat(g, id="kval", model=v.fit )
+	#p <- predict(g, model=v.fit, newdata=clip_grid)
+	#p <- krige(kval~1, ks_proj, clip_grid, model = m)
+	
+	#g <- gstat(g, id="kval", model=v.fit )
+	#p <- predict(g, model=v.fit, newdata=clip_grid)
+	kr = autoKrige(log10(kval)~1, ks_proj, clip_grid)
 	fname = paste("pres/nyc_ok_",i,".pdf",sep="")
 	#jpeg (filename="pres/fname", width=2400, height=1400, type="cairo")
-	pdf (file=fname, width=12, height=8)
+	#pdf (file=fname, width=12, height=8)
 	
 	pts <- list("sp.points", ks_proj, pch = 4, col = "black", cex=0.5)
 	#pts <- list("sp.points", ks_proj, pch = 4, col = "black", cex=0.5)
-	pp <- spplot(p, zcol="kval.pred", scales = list(draw = T), col.regions=heat.colors(30, 0.5),cuts=26, sp.layout=list(pts), contour=F, labels=FALSE, pretty=F, col='brown', main='London OK Prediction')
-	print(fname)
-	print(pp)
-	dev.off()
+	#pp <- spplot(p, zcol="kval.pred", scales = list(draw = T), col.regions=heat.colors(30, 0.5),cuts=26, sp.layout=list(pts), contour=F, labels=FALSE, pretty=F, col='brown',
+	#pp <- spplot(p, zcol="kval.pred", scales = list(draw = T), col.regions=heat.colors(1000),cuts=100, sp.layout=list(pts), contour=F, labels=FALSE, pretty=F, col='brown', 
+	#	main=paste("OK Prediction",i,"",sep=" "))
+	#pp <- spplot(kr$krige_output, zcol="var1.pred", scales = list(draw = T), col.regions=heat.colors(1000),cuts=1000, sp.layout=list(pts), contour=F, labels=FALSE, pretty=F, col='brown', 
+	#	main=paste("OK Prediction",i,"",sep=" "))
+	ra <- range(ks_proj$kval)
+	b1 <- bubble(ks_proj, "kval", maxsize = 1.5, main=paste("NYC",i,ra[1], ra[2],"",sep=" "), 
+		key.entries = 2^(-1:4), scales = list(draw = T))
+	#print(fname)
+	#print(pp)
+	#dev.off()
 }
 
-make_maps(tk, 1)
-make_maps(tk1, 2)
-make_maps(fk, 3)
-make_maps(fk1, 4)
+pp1 <- make_maps(tk, "to_cols")
+pp2 <- make_maps(tk1, "to_rows")
+
+#pdf (file="pres/nyc_ok_side_by.pdf", width=12, height=8)
+#print(pp1, split=c(1,1,2,4), more=T)
+#print(pp2, split=c(2,1,4,1), more=T)
+#dev.off()
+
+pp3<-make_maps(fk, "from_cols")
+pp4<-make_maps(fk1, "from_rows")
+#pdf (file="pres/nyc_ok_side_by1.pdf", width=12, height=8)
+#print(pp4, split=c(1,1,2,1), more=T)
+#print(pp3, split=c(2,1,2,1), more=F)
+#dev.off()
+
+pdf (file="pres/nyc_ok_side_by2.pdf", width=12, height=12)
+print(pp1, split=c(1,1,2,2), more=T)
+print(pp2, split=c(2,1,2,2), more=T)
+print(pp4, split=c(1,2,2,2), more=T)
+print(pp3, split=c(2,2,2,2), more=F)
+dev.off()
+
+#i = "blah"
+#pp <- spplot(p, zcol="kval.pred", scales = list(draw = T),at = seq(gmin, gmax, length=100), col.regions=heat.colors(1000),cuts=100, sp.layout=list(pts), contour=F, labels=FALSE, pretty=F, col='brown', 
+#	main=paste("OK Prediction",i,"",sep=" "))
