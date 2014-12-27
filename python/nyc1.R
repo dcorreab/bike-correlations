@@ -2,9 +2,10 @@ library(sp)
 library(rgdal)
 library(gstat)
 library(automap)
+day = 'wed'
 # trips to
-nyc_tc <- read.csv("../results/nyc_to_cols.csv", row.names=1)
-nyc_tr <- read.csv("../results/nyc_to_rows.csv", row.names=1)
+nyc_tc <- read.csv(paste("../results/nyc_",day,"_to_cols.csv",sep=""), row.names=1)
+nyc_tr <- read.csv(paste("../results/nyc_",day,"_to_rows.csv",sep=""), row.names=1)
 
 ntc <- data.matrix(nyc_tc)
 row.names(ntc) <- colnames(ntc)
@@ -12,8 +13,8 @@ ntr <- data.matrix(nyc_tr)
 row.names(ntr) <- colnames(ntr)
 
 # trips from
-nyc_fc <- read.csv("../results/nyc_from_cols.csv", row.names=1)
-nyc_fr <- read.csv("../results/nyc_from_rows.csv", row.names=1)
+nyc_fc <- read.csv(paste("../results/nyc_",day,"_from_cols.csv",sep=""), row.names=1)
+nyc_fr <- read.csv(paste("../results/nyc_",day,"_from_rows.csv",sep=""), row.names=1)
 
 nfc <- data.matrix(nyc_fc)
 row.names(nfc) <- colnames(nfc)
@@ -30,6 +31,10 @@ ndm <- data.matrix(nyc_d)
 ndm1 <- data.matrix(nyc_d)
 ndm1[lower.tri(ndm1)] <- t(ndm1)[lower.tri(ndm1)]
 
+get_mod <- function(as, kss, tr) {
+	tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=as,k=kss), trace=tr), error=function(e) NULL)
+}
+
 mod1.nls <- function(city_r,i,ks) {
 	#print(i)
 	#print(length(ntc[i,]) == length(ldm1[i,]))
@@ -40,72 +45,39 @@ mod1.nls <- function(city_r,i,ks) {
 	rvec <- rvec [indx]
 	d <- log10(dvec)
 	mod <- tryCatch( nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.8,k=ks), trace=F), error=function(e) NULL)
+	if (is.null(mod)) { mod <- get_mod(0.8,0.5,F)			}
+	if (is.null(mod)) { mod <- get_mod(0.8,0.6,F)			}
+	if (is.null(mod)) { mod <- get_mod(0.8,0.3,F)			}
+	if (is.null(mod)) { mod <- get_mod(0.2,2,F)			}
+	if (is.null(mod)) { mod <- get_mod(0.2,1,F)			}
+	if (is.null(mod)) { mod <- get_mod(0.1,1,F)			}
+	if (is.null(mod)) { mod <- get_mod(0.8,1.2,F)			}
+	if (is.null(mod)) { mod <- get_mod(0.2,0.01,F)			}
+	if (is.null(mod)) { mod <- get_mod(0.8,0.01010101,F)	}
+	if (is.null(mod)) { mod <- get_mod(0.01,0.2,F)			}
+	if (is.null(mod)) { mod <- get_mod(0.1,0.4,F)			}
+	if (is.null(mod)) { mod <- get_mod(0.3,2,F)			}
+	if (is.null(mod)) {	mod <- get_mod(0.4,2,F)			}
 	if (is.null(mod)) {
-		ks=0.5
-		
-		mod <- tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.8,k=ks), trace=F), error=function(e) NULL)
-	}
-	if (is.null(mod)) {
-		ks=0.6
-		
-		mod <- tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.8,k=ks), trace=F), error=function(e) NULL)
-	}
-	if (is.null(mod)) {
-		ks=0.3
-		
-		mod <- tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.8,k=ks), trace=F), error=function(e) NULL)
-	}
-	if (is.null(mod)) {
-		ks=2
-		
-		mod <- tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.2,k=ks), trace=F), error=function(e) NULL)
-	}
-	if (is.null(mod)) {
-		ks=1
-		
-		mod <- tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.2,k=ks), trace=F), error=function(e) NULL)
-	}
-	if (is.null(mod)) {
-		ks=1
-		
-		mod <- tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.1,k=ks), trace=F), error=function(e) NULL)
-	}
-	if (is.null(mod)) {
-		ks=1.2
-		
-		mod <- tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.8,k=ks), trace=F), error=function(e) NULL)
-	}
-	if (is.null(mod)) {
-		ks=0.01
-		
-		mod <- tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.2,k=ks), trace=F), error=function(e) NULL)
-	}
-	if (is.null(mod)) {
-		ks=0.01010101
-		
-		mod <- tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.8,k=ks), trace=F), error=function(e) NULL)
-	}
-	if (is.null(mod)) {
-		ks=0.2
-		mod <- tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.01,k=ks), trace=F), error=function(e) NULL)
-	}
-	if (is.null(mod)) {
-		ks=0.4
-		mod <- tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.1,k=ks), trace=F), error=function(e) NULL)
+		print(i)
+		mod <- get_mod(0.04,2,F)	
 	}
 	k <- 10 ^ summary (mod)$parameters [3]
 }
 
+
 #print(i)
-#print(length(ntc[i,]) == length(ldm1[i,]))
-#i = 100
+#print(length(nfc[i,]) == length(ldm1[i,]))
+#city_r <- ntc
+#i = 9
 #dvec <- as.vector (ndm1[i,])
 #rvec <- as.vector (city_r[i,])
 #indx <- which (!is.na (dvec) & !is.na (rvec) & dvec > 0)
 #dvec <- dvec [indx]
 #rvec <- rvec [indx]
 #d <- log10(dvec)
-#mod <- nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=1,k=0.69), trace=T)
+#mod <- get_mod(0.8,0.6,F)
+#mod <- nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.1,k=0.4), trace=T)
 
 ntc_k <- numeric()
 for (i in 1:332) {
@@ -142,6 +114,12 @@ tk <- data.frame(id=sn, kval=ntc_k)
 tk1 <- data.frame(id=sn, kval=ntr_k)
 fk1 <- data.frame(id=sn, kval=nfr_k)
 fk <- data.frame(id=sn, kval=nfc_k)
+
+write.csv(tk, file = paste("kvals/",day,"_nyc_tc_k.csv",sep=""))
+write.csv(tk1, file = paste("kvals/",day,"_nyc_tr_k.csv",sep=""))
+write.csv(fk, file = paste("kvals/",day,"_nyc_fc_k.csv",sep=""))
+write.csv(fk1, file = paste("kvals/",day,"_nyc_fr_k.csv",sep=""))
+
 
 make_maps <- function(kv,i){
 	ks <- merge(kv, nyc_sts, by ="id")
@@ -214,11 +192,11 @@ make_maps <- function(kv,i){
 	#pp <- spplot(p, zcol="kval.pred", scales = list(draw = T), col.regions=heat.colors(30, 0.5),cuts=26, sp.layout=list(pts), contour=F, labels=FALSE, pretty=F, col='brown',
 	#pp <- spplot(p, zcol="kval.pred", scales = list(draw = T), col.regions=heat.colors(1000),cuts=100, sp.layout=list(pts), contour=F, labels=FALSE, pretty=F, col='brown', 
 	#	main=paste("OK Prediction",i,"",sep=" "))
-	#pp <- spplot(kr$krige_output, zcol="var1.pred", scales = list(draw = T), col.regions=heat.colors(1000),cuts=1000, sp.layout=list(pts), contour=F, labels=FALSE, pretty=F, col='brown', 
-	#	main=paste("OK Prediction",i,"",sep=" "))
-	ra <- range(ks_proj$kval)
-	b1 <- bubble(ks_proj, "kval", maxsize = 1.5, main=paste("NYC",i,ra[1], ra[2],"",sep=" "), 
-		key.entries = 2^(-1:4), scales = list(draw = T))
+	pp <- spplot(kr$krige_output, zcol="var1.pred", scales = list(draw = T), col.regions=heat.colors(1000),cuts=1000, sp.layout=list(pts), contour=F, labels=FALSE, pretty=F, col='brown', 
+		main=paste("OK Prediction",i,"",sep=" "))
+	#ra <- range(ks_proj$kval)
+	#b1 <- bubble(ks_proj, "kval", maxsize = 1.5, main=paste("NYC",i,ra[1], ra[2],"",sep=" "), 
+	#	key.entries = 2^(-1:4), scales = list(draw = T))
 	#print(fname)
 	#print(pp)
 	#dev.off()
@@ -239,7 +217,7 @@ pp4<-make_maps(fk1, "from_rows")
 #print(pp3, split=c(2,1,2,1), more=F)
 #dev.off()
 
-pdf (file="pres/nyc_ok_side_by2.pdf", width=12, height=12)
+pdf (file=paste("pres/nyc_ok_side_by_",day,"_krig.pdf",sep=""), width=12, height=12)
 print(pp1, split=c(1,1,2,2), more=T)
 print(pp2, split=c(2,1,2,2), more=T)
 print(pp4, split=c(1,2,2,2), more=T)
