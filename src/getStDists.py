@@ -5,6 +5,7 @@
 # start again where it left off.
 import time, os, glob, sys, getopt
 import numpy
+import pandas as pd
 import router
 
 def getDist (html):
@@ -20,6 +21,11 @@ def getDist (html):
         di = d.find(text=True).encode('utf-8').strip()
         dtot = dtot + float (di.split ("km") [0])
     return dtot
+
+def route_all_nodes(r_file, count):
+    t = pd.read_csv("quickest-all.txt", skiprows=4, sep='\t', usecols=['#Latitude','Longitude'])
+    t.drop(t.index[0], axis=0, inplace=True) # remove the first line
+    t.to_csv("../results/routes/%s_lat_long.txt" % count)
 
 def getLatLons (city="nyc"):
     ids = []
@@ -68,8 +74,11 @@ def writeDMat (latlons, nodes, city="nyc"):
         router.doRoute (lati, loni, latj, lonj, nodes, city)
         # router writes "quickest.html" which is then analysed to extract dist
         html = os.path.abspath ("quickest.html")
+        r_file = os.path.abspath ("quickest-all.txt")
         if os.path.isfile (html):
             d = getDist (html)
+            nm = str(idi) + "_" + str (idj)
+            r = route_all_nodes(r_file, nm) # output distances to file
             f.write (str (idi) + ", " + str (idj) + ", " + str (d) + '\n')
             f.flush ()
         else: # TODO: Error handler

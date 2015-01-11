@@ -12,22 +12,39 @@ from progressbar import ProgressBar
 # allow input to be specified for the input files
 parser = argparse.ArgumentParser(description='Get R2 correlations given total trips matrix for bikeshare system of New York or London. Loads london_total_from.csv and london_total_to.csv')
 parser.add_argument('-c','--city', help='Specify the city to perform regressions: nyc or london (or boris)',required=True)
+parser.add_argument('-day','--day', help='Specify the day on which to run the regressions: mon, tue, wed, thu, fri, sat, sun or total',required=True)
+
 args = parser.parse_args()
+
 
 ## show values ##
 print ("City: %s" % args.city )
 #set up variables to handle files
 city = args.city
+period = args.day
+
 if city == 'boris':
     city == 'london'
+
+#trips_from = pd.read_csv('../results/%s_total_from.csv' % city, header=1, skiprows=[2]).set_index('end_id').fillna(0)
+if period == 'total':
+    trips_from = pd.read_csv('../results/weekdays/%s_total_from.csv' % (city), header=0, index_col=0).fillna(0)
+    # no need to skip rows
+    trips_to = pd.read_csv('../results/weekdays/%s_total_to.csv' % (city), header=0, index_col=0).fillna(0)
+    to_file = '../results/weekdays/%s_total_to.csv' % (city)
+    from_file = '../results/weekdays/%s_total_from.csv' % (city)
+elif period in ('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'):
+    day = period
+    trips_from = pd.read_csv('../results/weekdays/%s_%s_total_from.csv' % (city, day), header=0, index_col=0).fillna(0)
+    # no need to skip rows
+    trips_to = pd.read_csv('../results/weekdays/%s_%s_total_to.csv' % (city, day), header=0, index_col=0).fillna(0)
+    to_file = '../results/weekdays/%s_%s_total_from.csv' % (city, day)
+    from_file = '../results/weekdays/%s_%s_total_to.csv' % (city, day)
+
 # Open the trips from file
 print "Loading Trips..."
-print "Loading Trips From...\t total_from.csv"
-print "Loading Trips TO...\t total_to.csv"
-#trips_from = pd.read_csv('../results/%s_total_from.csv' % city, header=1, skiprows=[2]).set_index('end_id').fillna(0)
-trips_from = pd.read_csv('../results/%s_total_from.csv' % city, header=0, index_col=0).fillna(0)
-# no need to skip rows
-trips_to = pd.read_csv('../results/%s_total_to.csv' % city, header=0, index_col=0).fillna(0)
+print "Loading Trips From...\t %s" % to_file
+print "Loading Trips TO...\t %s" % from_file
 
 """
 NOTES:
@@ -158,10 +175,18 @@ rows_from = get_r2_from[0]
 cols_to = get_r2_to[1]
 rows_to = get_r2_to[0]
 
-cols_from.to_csv("../results/%s_from_cols.csv" % city)
-rows_from.to_csv("../results/%s_from_rows.csv" % city)
-
-cols_to.to_csv("../results/%s_to_cols.csv" % city)
-rows_to.to_csv("../results/%s_to_rows.csv" % city)
+if period == 'total':
+    cols_from.to_csv("../results/cor/%s_%s_from_cols.csv" % (city, period))
+    rows_from.to_csv("../results/cor/%s_%s_from_rows.csv" % (city, period))
+    
+    cols_to.to_csv("../results/cor/%s_%s_to_cols.csv" % (city, period))
+    rows_to.to_csv("../results/cor/%s_%s_to_rows.csv" % (city, period))
+elif period in ('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'):
+    cols_from.to_csv("../results/cor/%s_%s_from_cols.csv" % (city, day))
+    rows_from.to_csv("../results/cor/%s_%s_from_rows.csv" % (city, day))
+    
+    cols_to.to_csv("../results/cor/%s_%s_to_cols.csv" % (city, day))
+    rows_to.to_csv("../results/cor/%s_%s_to_rows.csv" % (city, day))
+    
 
  

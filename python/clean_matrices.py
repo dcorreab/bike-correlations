@@ -62,10 +62,10 @@ l_fr.drop(l_fr.index[to_remove], axis=0, inplace=True)
 l_tr.drop(l_tr.columns[to_remove], axis=1, inplace=True)
 l_tr.drop(l_tr.index[to_remove], axis=0, inplace=True)
 
-l_tc.to_csv("../results/london_to_cols.csv")
-l_tr.to_csv("../results/london_to_rows.csv")
-l_fc.to_csv("../results/london_from_cols.csv")
-l_fr.to_csv("../results/london_from_rows.csv")
+l_tc.to_csv("../results/cor/london_to_cols.csv")
+l_tr.to_csv("../results/cor/london_to_rows.csv")
+l_fc.to_csv("../results/cor/london_from_cols.csv")
+l_fr.to_csv("../results/cor/london_from_rows.csv")
 
 # 768 lon_matrix.index[736]
 # 772 lon_matrix.index[740]

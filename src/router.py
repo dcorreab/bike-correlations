@@ -110,7 +110,7 @@ def doRoute (lat1, lon1, lat2, lon2, nodes, city="london"):
     node2 = matchNodes (lon2, lat2, nodes)
     # profiles copied from  ../xml/routino-profiles.xml, same for translations.
     # Directory in first arg has to be changed to appropriate routine dir
-    args = ["./../../routino-2.7.2/src/router", "--prefix="+city[:2],\
+    args = ["/Users/colinbroderick/Downloads/routino-2.7.2/src/router", "--prefix="+city[:2],\
             "--transport=bicycle", "--quickest",\
             "--profiles=../data/routino-profiles.xml",\
             "--translations=../data/routino-translations.xml",\
