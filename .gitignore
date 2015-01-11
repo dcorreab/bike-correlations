@@ -33,3 +33,8 @@
 
 # R batch files
 *.Rout
+
+*.pyc
+*.tmp
+
+*.mem
