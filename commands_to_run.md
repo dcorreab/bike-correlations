@@ -26,6 +26,10 @@ time python reg1.py -c nyc -day mon
 ogr2ogr -f 'GeoJSON' -s_srs EPSG:2263 -t_srs EPSG:4326 mn_mappluto.json MNMapPLUTO.shp 
 ogr2ogr -f "PostgreSQL" PG:"dbname=osm_ie user=colinbroderick" mn_mappluto.json -nln mn_pluto
 
+ogr2ogr -f 'GeoJSON' -s_srs EPSG:2263 -t_srs EPSG:4326 bk_mappluto.json BKMapPLUTO.shp
+ogr2ogr -f "PostgreSQL" PG:"dbname=osm_ie user=colinbroderick" bk_mappluto.json -nln mn_pluto -append
+
+
 -- add a column for landuse descriptions
 ALTER TABLE mn_pluto ADD COLUMN lu_descript TEXT;
 

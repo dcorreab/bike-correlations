@@ -2,9 +2,11 @@ library(sp)
 library(rgdal)
 library(gstat)
 library(automap)
+library(ggplot2)
+library(gridExtra)
 day=commandArgs(TRUE)[1]
 
-#day="fri"
+#day="mon"
 # trips to
 nyc_tc <- read.csv(paste("../results/cor/nyc_",day,"_to_cols.csv",sep=""), row.names=1)
 nyc_tr <- read.csv(paste("../results/cor/nyc_",day,"_to_rows.csv",sep=""), row.names=1)
@@ -34,7 +36,7 @@ ndm1 <- data.matrix(nyc_d)
 ndm1[lower.tri(ndm1)] <- t(ndm1)[lower.tri(ndm1)]
 
 get_mod <- function(rvec, d, as, kss, tr) {
-	tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=as,k=kss), trace=tr), error=function(e) NULL)
+	tryCatch(nls (rvec ~ cc + a * exp(-( ( d - min(d) )/k)^2), start=list(cc=0, a=as,k=kss), trace=tr, control = list(maxiter = 500)), error=function(e) NULL)
 }
 
 
@@ -46,10 +48,12 @@ mod1.nls <- function(city_r,i,ks) {
 	indx <- which (!is.na (dvec) & !is.na (rvec) & dvec > 0)
 	dvec <- dvec [indx]
 	rvec <- rvec [indx]
+	
 	d <- log10(dvec)
 	#mod <- tryCatch( nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.8,k=ks), trace=F), error=function(e) NULL)
 	#mod <- tryCatch( nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.8,k=ks), trace=F), error=function(e) NULL)
 	mod <- get_mod(rvec, d, 0.8, ks, F)
+	if (is.null(mod)) { mod <- get_mod(rvec, d, 2,1,F)		}
 	if (is.null(mod)) { mod <- get_mod(rvec, d, 1.76,0.38,F)		}
 	if (is.null(mod)) { mod <- get_mod(rvec, d, 0.8,0.5,F)}
 	if (is.null(mod)) { mod <- get_mod(rvec, d, 0.8,0.6,F)			}
@@ -85,76 +89,83 @@ mod1.nls <- function(city_r,i,ks) {
 		print(c(i,0.9,0.01))
 		mod <- get_mod(rvec, d, 0.9,0.01,F)	}
 		
-	k <- 10 ^ summary (mod)$parameters [3]
+			k <- 10 ^ summary (mod)$parameters [3]
 }
 
-
-#print(i)
-#print(length(nfc[i,]) == length(ldm1[i,]))
-#city_r <- nfr
-#cv = 112
-#dvec <- as.vector (ndm1[cv,])
-#rvec <- as.vector (city_r[cv,])
-#indx <- which (!is.na (dvec) & !is.na (rvec) & dvec > 0)
-#dvec <- dvec [indx]
-#rvec <- rvec [indx]
-#range(rvec)
-#99 0.000003136919 0.747528061374
-#112 0.000003323166 0.388167814813
-#120 0.00000001726077 0.69297663123910
-
-#d <- log10(dvec)
-#plot(rvec ~ d)
-#mod <- get_mod(rvec, d,0.21,2,F)
-#mod <- nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=1.76,k=0.38), trace=T)
-#xx<-seq(-0.8,2,0.01)
+#mod <- nls (rvec ~ cc + a * exp(-((d - min(d))/k)^2), start=list(cc=0, a=0.2446811,k=1.03989), trace=T, control = list(maxiter = 50,minFactor=1e-5 ))
+#xx<-seq(0,1,0.01)
+#kk <- seq(1,0,-0.1)
 #for (i in xx) {
-#		mod <- tryCatch(nls(rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=i,k=0.38), trace=F), error=function(e) NULL)
-#	if (!is.null(mod)){
-#		print (i)
-#		print(10 ^ summary (mod)$parameters [3])#
-#	}
+	#print(i)
+	#for (kv in kk){
+		#print(k)
+		#print(i);
+#			mod <- tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d))/k)^2), start=list(cc=0, a=i,k=1.03989), trace=F, control = list(maxiter = 100, minFactor=1/2064)), error=function(e) NULL)
+#		if (!is.null(mod)){
+#			print (c(i, k))
+#			print(10 ^ summary (mod)$parameters [3])#
+#		}
+#		#}
 #}
-
+print("I AM NUMBER ONE")
 ntc_k <- numeric()
 for (i in 1:332) {
-	x <- mod1.nls(ntc, i, 0.7)
-	ntc_k <- c(ntc_k, x)
-	if (x >= 22){
-		print(c(i,x))
-	}
+	if (day %in% c("mon", "sun") & i == 112 ) {
+			print(i)
+			ntc_k <- c(ntc_k, 1)
+		} else {
+			x <- mod1.nls(ntc, i, 0.7)
+			ntc_k <- c(ntc_k, x)
+		}
+		if (x >= 22) {
+			print(c(i,x))
+		}
 }
-
+print("I AM NUMBER TWO")
 ntr_k <- numeric()
 for (i in 1:332) {
-	x <- mod1.nls(ntr, i, 0.7)
-	ntr_k <- c(ntr_k, x)
+	if (day %in% c("mon", "sun") & i == 112 ) {
+		ntr_k <- c(ntr_k, 1)
+		} else {
+			x <- mod1.nls(ntr, i, 0.7)
+			ntr_k <- c(ntr_k, x)
+		}
 }
-
+print("I AM NUMBER THREE")
 nfr_k <- numeric()
 for (i in 1:332) {
-	x <- mod1.nls(nfr, i, 2)
-	nfr_k <- c(nfr_k, x)
-	if (x >= 30){
-		print(c(i,x))
-	}
-	
-}
-kvals <- numeric()
-for (i in 1:332) {
-	
+	if (day %in% c("mon", "sun") & i == 112 ) {
+		nfr_k <- c(nfr_k, 1)
+		} else {
+			x <- mod1.nls(nfr, i, 2)
+			nfr_k <- c(nfr_k, x)
+		}
+		if (x >= 30){
+			print(c(i,x))
+		}	
 }
 
 
+print("I AM NUMBER fours")
 nfc_k <- numeric()
 for (i in 1:332) {
-	x <- mod1.nls(nfc, i, 0.7)
-	nfc_k <- c(nfc_k, x)
+	if (day %in% c("mon", "sun") & i == 112 ) {
+		nfc_k <- c(nfc_k, 1)
+		} else {
+			x <- mod1.nls(nfc, i, 0.7)
+			nfc_k <- c(nfc_k, x)
+		}
+		if (x >= 30){
+			print(c(i,x))
+		}
 }
 
 #names(nyc_tc)
 
 station_names <- names(nyc_tc)
+#if (day %in% c("mon", "sun") ) {
+#	station_names <- station_names[-112]
+#}
 
 sn <- gsub("X", "", paste(station_names))
 
@@ -241,35 +252,29 @@ pp1 <- make_maps(tk)
 
 pp3<-make_maps(fk)
 
-pp1 <- plot_maps(pp1, "to_cols")
-pp3 <- plot_maps(pp3, "from_cols")
-#pp4<-make_maps(fk1, "from_rows")
+p1.kr = as.data.frame(pp1$krige_output)
+p3.kr = as.data.frame(pp3$krige_output)
+lab <- round(seq(-0.3,2,.1), digits=1)
+lab <- round(seq(0,29,1), digits=1)
 
-pdf (file=paste("../results/kvals/pdf/nyc_ok_side_by_",day,"_krig.pdf",sep=""), width=12, height=12)
-print(pp1, split=c(1,1,2,1), more=T)
-print(pp3, split=c(2,1,2,1), more=F)
-dev.off()
-#print(pp2, split=c(2,1,2,2), more=T)
-#print(pp4, split=c(1,2,2,2), more=T)
-#print(pp3, split=c(2,2,2,2), more=F)
-#dev.off()
+nyc_sts <- read.csv("../data/station_latlons_nyc.txt")
+coordinates(nyc_sts)= ~ long+lat
+latlong = "+init=epsg:4326"
+proj4string(nyc_sts) <- CRS(latlong)
+NAD83 <- "+proj=utm +zone=18 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+# transform coords to british national grid
+nyc_sts.p <- spTransform(nyc_sts, CRS(NAD83))
+nyc_sts.d <- as.data.frame(nyc_sts.p)
 
-jpeg (file=paste("../results/kvals/jpeg/nyc_ok_side_by_",day,"_krig.jpeg",sep=""), width=2000, height=2000)
-print(pp1, split=c(1,1,2,1), more=T)
-print(pp3, split=c(2,1,2,1), more=F)
-dev.off()
+sts <- geom_point(data=nyc_sts.d, aes(x=long, y=lat),shape=3, colour="white", size=0.8)
+plot1 <- ggplot() + geom_raster(data=p1.kr, aes(x=x,y=y, fill=10^(var1.pred))) + sts + 
+      scale_fill_gradientn(limits=c(0,12), colours=bpy.colors(50),na.value = "transparent", name="k-value (km)")  + coord_fixed() + theme(legend.key.height=unit(5,"lines"))
+plot2 <- ggplot() + geom_raster(data=p3.kr, aes(x=x,y=y, fill=10^var1.pred)) + sts +
+      scale_fill_gradientn(limits=c(0,12), colours=bpy.colors(50),na.value = "transparent", name="k-value (km)")  + coord_fixed() + theme(legend.key.height=unit(5,"lines"))
 
-#print(pp2, split=c(2,1,2,2), more=T)
-#print(pp4, split=c(1,2,2,2), more=T)
-#print(pp3, split=c(2,2,2,2), more=F)
-
-
-
-
-
-
-
-
-#i = "blah"
-#pp <- spplot(p, zcol="kval.pred", scales = list(draw = T),at = seq(gmin, gmax, length=100), col.regions=heat.colors(1000),cuts=100, sp.layout=list(pts), contour=F, labels=FALSE, pretty=F, col='brown', 
-#	main=paste("OK Prediction",i,"",sep=" "))
+png (file=paste("../results/kvals/jpeg/ggplot_nyc_ok_side_by_",day,"_krig.png",sep=""), width=12, height=10, type="cairo", res=150, units="in")
+	 grid.arrange(
+		 arrangeGrob(plot1, plot2,
+		 ncol=2),
+		 main=textGrob(paste("OK Krigging", day, sep=" "), gp=gpar(cex=2), just="top"))
+	dev.off()

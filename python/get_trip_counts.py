@@ -166,6 +166,7 @@ else:
     sys.exit(1)
 
 # combine all the trips into one file
+tt_trips = df.start_id.count()
 df = pd.concat(all_trips)
 df.s_time = pd.to_datetime(df['s_time'])
 df.e_time = pd.to_datetime(df['e_time'])
@@ -176,7 +177,10 @@ df.set_index(df.s_time, inplace=True)
 #####################################
 
 # Real total number of stations
-station_count = london.count_stations()
+#station_count = london.count_stations()
+import locale
+locale.setlocale(locale.LC_ALL, 'en_US')
+print "Total Stations:\t %s\n" % locale.format("%d", tt_trips, grouping=True)
 # Create and identity matrix that is (n x n) for NYC (332 x 332)
 #i_matrix = np.matrix(np.identity(station_count), copy=False)
 london_stations = london.stations[["id"]]

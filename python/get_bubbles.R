@@ -59,8 +59,8 @@ make_plot <- function(day,dayf,i,g) {
 	nyc_boros <- geom_path(data=shape_p.df, aes(long,lat, group=group), colour="grey75", linetype = 2)
 	xlim <- xlim(xl[1], xl[2])
 	ylim <- ylim(yl[1], yl[2])
-	k_size <- scale_size_continuous(name="K-Value (km)",range=c(1,10), limits=c(1,5), breaks = c(0,3, 5, 7, 9, 11,13, 20, 25), labels=c(0,"< 3", 5, 7, 9, 11,13, 20, "25 +"))
-	k_colour <- scale_color_gradient(name="K-Value (km)", high="darkorchid3",low = "orange",limits=c(1,5), breaks = c(0,3, 5, 7, 9, 11,13, 20, 25),labels=c(0,"< 3", 5, 7, 9, 11,13, 20, "25 +"))
+	k_size <- scale_size_continuous(name="K-Value (km)",range=c(1,10), limits=c(0,20), breaks = c(0,3, 5, 7, 9, 11,13, 20, 25), labels=c(0,"< 3", 5, 7, 9, 11,13, 20, "25 +"))
+	k_colour <- scale_color_gradient(name="K-Value (km)", high="darkorchid3",low = "orange",limits=c(0,20), breaks = c(0,3, 5, 7, 9, 11,13, 20, 25),labels=c(0,"< 3", 5, 7, 9, 11,13, 20, "25 +"))
 
 	xx <- ggplot(data=day, aes(x=long, y=lat)) + xlim + ylim + nyc_boros +
 	  		geom_point(aes(size=kval, color=kval),alpha=0.6) +
@@ -99,8 +99,8 @@ xl <- bbexpand(range(day$long), 0.1)
 nyc_boros <- geom_path(data=shape_p.df, aes(long,lat, group=group), colour="grey75", linetype = 2)
 xlim <- xlim(xl[1], xl[2])
 ylim <- ylim(yl[1], yl[2])
-k_size <- scale_size_continuous(name="K-Value (km)",range=c(1,10), limits=c(0.5,25), breaks = c(0,3, 5, 7, 9, 11,13, 20, 25), labels=c(0,"< 3", 5, 7, 9, 11,13, 20, "25 +"))
-k_colour <- scale_color_gradient(name="K-Value (km)", high="darkorchid3",low = "orange",limits=c(0.5,25), breaks = c(0,3, 5, 7, 9, 11,13, 20, 25),labels=c(0,"< 3", 5, 7, 9, 11,13, 20, "25 +"))
+k_size <- scale_size_continuous(name="K-Value (km)",range=c(1,10), limits=c(0,20), breaks = c(0,3, 5, 7, 9, 11,13, 20, 25), labels=c(0,"< 3", 5, 7, 9, 11,13, 20, "25 +"))
+k_colour <- scale_color_gradient(name="K-Value (km)", high="darkorchid3",low = "orange",limits=c(0,20), breaks = c(0,3, 5, 7, 9, 11,13, 20, 25),labels=c(0,"< 3", 5, 7, 9, 11,13, 20, "25 +"))
 
 xx <- ggplot(data=day, aes(x=long, y=lat)) + xlim + ylim + nyc_boros +
   		geom_point(aes(size=kval, color=kval),alpha=0.6) +
@@ -115,9 +115,11 @@ if( day %in% days) {
 	tue <- read.csv("../results/kvals/nyc_tue_tc_k.csv")
 	wed <- read.csv("../results/kvals/nyc_wed_tc_k.csv")
 	thu <- read.csv("../results/kvals/nyc_thu_tc_k.csv")
+	# remove station 232 index124
+	thu <- thu[-c(124),]
 	fri <- read.csv("../results/kvals/nyc_fri_tc_k.csv")
 	sat <- read.csv("../results/kvals/nyc_sat_tc_k.csv")
-	sat <- sat[-221,]
+	#sat <- sat[-221,]
 	sun <- read.csv("../results/kvals/nyc_sun_tc_k.csv")
 	monf <- read.csv("../results/kvals/nyc_mon_fc_k.csv")
 	tuef <- read.csv("../results/kvals/nyc_tue_fc_k.csv")
@@ -125,13 +127,33 @@ if( day %in% days) {
 	thuf <- read.csv("../results/kvals/nyc_thu_fc_k.csv")
 	frif <- read.csv("../results/kvals/nyc_fri_fc_k.csv")
 	satf <- read.csv("../results/kvals/nyc_sat_fc_k.csv")
-	satf <- satf[-221,] # remove the outliers K = 69
+	#satf <- satf[-221,] # remove the outliers K = 69
 	sunf <- read.csv("../results/kvals/nyc_sun_fc_k.csv")
-	sunf <- sunf[-c(124,205,25,8),]
+	#sunf <- sunf[-c(124,205,25,8),]
+	sunf <- sunf[-c(25,8),]
 	
-	kvals = c(mon$kval, tue$kval, wed$kval, thu$kval, fri$kval,
-				monf$kval, tuef$kval, wedf$kval, thuf$kval, frif$kval)
-	
+	kvals = c(mon$kval, tue$kval, wed$kval, thu$kval, fri$kval, sat$kval, sun$kval,
+				monf$kval, tuef$kval, wedf$kval, thuf$kval, frif$kval, satf$kval, sunf$kval)
+			
+		gg <- function(x){
+				x[x$kval > 15,]
+			}	
+			gg(mon)
+			gg(tue)
+			gg(wed)
+			gg(thu)
+			gg(fri)
+			gg(sat)
+			gg(sun)
+			
+			gg(monf)
+			gg(tuef)
+			gg(wedf)
+			gg(thuf)
+			gg(frif)
+			gg(satf)
+			gg(sunf)
+				
 	
 	m <- make_plot(mon,monf, '1_Monday', kvals)
 	t <- make_plot(tue,tuef, '2_Tuesday', kvals)
@@ -156,7 +178,7 @@ if( day %in% days) {
 	ff1 <- make_plot1(frif, '5_Friday',kvals)
 	sf1 <- make_plot1(satf, '6_Saturday',kvals)
 	suf1 <- make_plot1(sunf, '7_Sunday',kvals)
-	png (file=paste("../results/kvals/jpeg/t/nyc_weekdays_tok.png",sep=""), width=30, height=10, type="cairo", res=150, units="in")
+	png (file=paste("../results/kvals/jpeg/nyc_weekdays_tok.png",sep=""), width=30, height=10, type="cairo", res=150, units="in")
 	 	legend <- g_legend(m1)
 	 	lwidth <- sum(legend$width)
 		 grid.arrange(
@@ -169,7 +191,7 @@ if( day %in% days) {
 			 nrow=2, heights=c(6/7,1/7),
 			 main=textGrob("Weekdays To (Mon - Fri)", gp=gpar(cex=2), just="top"))
 		dev.off()
-	png (file=paste("../results/kvals/jpeg/t/nyc_weekdays_fromk.png",sep=""), width=30, height=10, type="cairo", res=150, units="in")
+	png (file=paste("../results/kvals/jpeg/nyc_weekdays_fromk.png",sep=""), width=30, height=10, type="cairo", res=150, units="in")
 	 	legend <- g_legend(m1)
 	 	lwidth <- sum(legend$width)
 		 grid.arrange(
@@ -183,7 +205,7 @@ if( day %in% days) {
 			 main=textGrob("Weekdays From (Mon - Fri)", gp=gpar(cex=2), just="top"))
 		dev.off()
 
-	png (file=paste("../results/kvals/jpeg/t/nyc_weekends_tok.png",sep=""), width=12, height=10, type="cairo", res=150, units="in")
+	png (file=paste("../results/kvals/jpeg/nyc_weekends_tok.png",sep=""), width=12, height=10, type="cairo", res=150, units="in")
 	 	legend <- g_legend(m1)
 	 	lwidth <- sum(legend$width)
 		 grid.arrange(
@@ -195,7 +217,7 @@ if( day %in% days) {
 			 nrow=2, heights=c(6/7,1/7),
 			 main=textGrob("Weekends To (Sat - Sun)", gp=gpar(cex=2), just="top"))
 		dev.off()
-	png (file=paste("../results/kvals/jpeg/t/nyc_weekends_fromk.png",sep=""), width=12, height=10, type="cairo", res=150, units="in")
+	png (file=paste("../results/kvals/jpeg/nyc_weekends_fromk.png",sep=""), width=12, height=10, type="cairo", res=150, units="in")
 	 	legend <- g_legend(m1)
 	 	lwidth <- sum(legend$width)
 		 grid.arrange(
