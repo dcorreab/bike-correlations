@@ -52,6 +52,11 @@ shape_p.points = fortify(shape_p, region="id")
 names(shape_p.points) <- c("long", "lat","order","hole","piece","group","NTACode")
 shape_p.df = join(shape_p.points, shape_p@data, by="NTACode")
 
+dd = c(0,seq(1,8,0.3))
+#c(0,dd)
+#c(0,0.04825504,1.81331155,2.06897807,2.33466023,11.42850437)
+k_size <- scale_size_continuous(name="K-Value (km)",range=c(0,10), limits=c(0,4), breaks = dd, labels=dd)
+k_colour <- scale_color_gradient(name="K-Value (km)", high="darkorchid3",low = "orange",limits=c(0,4), breaks = dd, labels=dd)
 
 make_plot <- function(day,dayf,i,g) {
 	yl <- bbexpand(range(day$lat), 0.1)
@@ -59,9 +64,8 @@ make_plot <- function(day,dayf,i,g) {
 	nyc_boros <- geom_path(data=shape_p.df, aes(long,lat, group=group), colour="grey75", linetype = 2)
 	xlim <- xlim(xl[1], xl[2])
 	ylim <- ylim(yl[1], yl[2])
-	k_size <- scale_size_continuous(name="K-Value (km)",range=c(1,10), limits=c(0,20), breaks = c(0,3, 5, 7, 9, 11,13, 20, 25), labels=c(0,"< 3", 5, 7, 9, 11,13, 20, "25 +"))
-	k_colour <- scale_color_gradient(name="K-Value (km)", high="darkorchid3",low = "orange",limits=c(0,20), breaks = c(0,3, 5, 7, 9, 11,13, 20, 25),labels=c(0,"< 3", 5, 7, 9, 11,13, 20, "25 +"))
-
+	
+	#ksize
 	xx <- ggplot(data=day, aes(x=long, y=lat)) + xlim + ylim + nyc_boros +
 	  		geom_point(aes(size=kval, color=kval),alpha=0.6) +
 	  	  	k_size + k_colour +
@@ -73,7 +77,8 @@ make_plot <- function(day,dayf,i,g) {
 
 	yy <- ggplot(data=dayf, aes(x=long, y=lat)) + xlim + ylim + nyc_boros +
 	  		geom_point(aes(size=kval, color=kval),alpha=0.6) +
-	  	  	k_size + k_colour + theme(panel.background = element_blank()) +
+	  	  	k_size + k_colour + 
+			theme(panel.background = element_blank()) +
 			ggtitle("From")
 
 	png (file=paste("../results/kvals/jpeg/t/",i,"_nyc_k.png",sep=""), width=12, height=10, type="cairo", res=150, units="in")
@@ -99,8 +104,9 @@ xl <- bbexpand(range(day$long), 0.1)
 nyc_boros <- geom_path(data=shape_p.df, aes(long,lat, group=group), colour="grey75", linetype = 2)
 xlim <- xlim(xl[1], xl[2])
 ylim <- ylim(yl[1], yl[2])
-k_size <- scale_size_continuous(name="K-Value (km)",range=c(1,10), limits=c(0,20), breaks = c(0,3, 5, 7, 9, 11,13, 20, 25), labels=c(0,"< 3", 5, 7, 9, 11,13, 20, "25 +"))
-k_colour <- scale_color_gradient(name="K-Value (km)", high="darkorchid3",low = "orange",limits=c(0,20), breaks = c(0,3, 5, 7, 9, 11,13, 20, 25),labels=c(0,"< 3", 5, 7, 9, 11,13, 20, "25 +"))
+
+#k_size 
+
 
 xx <- ggplot(data=day, aes(x=long, y=lat)) + xlim + ylim + nyc_boros +
   		geom_point(aes(size=kval, color=kval),alpha=0.6) +
@@ -116,7 +122,7 @@ if( day %in% days) {
 	wed <- read.csv("../results/kvals/nyc_wed_tc_k.csv")
 	thu <- read.csv("../results/kvals/nyc_thu_tc_k.csv")
 	# remove station 232 index124
-	thu <- thu[-c(124),]
+	#thu <- thu[-c(124),]
 	fri <- read.csv("../results/kvals/nyc_fri_tc_k.csv")
 	sat <- read.csv("../results/kvals/nyc_sat_tc_k.csv")
 	#sat <- sat[-221,]
@@ -130,7 +136,7 @@ if( day %in% days) {
 	#satf <- satf[-221,] # remove the outliers K = 69
 	sunf <- read.csv("../results/kvals/nyc_sun_fc_k.csv")
 	#sunf <- sunf[-c(124,205,25,8),]
-	sunf <- sunf[-c(25,8),]
+	#sunf <- sunf[-c(25,8),]
 	
 	kvals = c(mon$kval, tue$kval, wed$kval, thu$kval, fri$kval, sat$kval, sun$kval,
 				monf$kval, tuef$kval, wedf$kval, thuf$kval, frif$kval, satf$kval, sunf$kval)

@@ -39,6 +39,15 @@ get_mod <- function(rvec, d, as, kss, tr) {
 	tryCatch(nls (rvec ~ cc + a * exp(-( ( d - min(d) )/k)^2), start=list(cc=0, a=as,k=kss), trace=tr, control = list(maxiter = 500)), error=function(e) NULL)
 }
 
+# get_mod with only d values in km rather than log10(d).
+#get_mod <- function(rvec, d, as, kss, tr) {
+#	#print(c(as, kss))
+#	tryCatch(
+#		nls(rvec ~ cc + a * exp(-(d/k)^2), start=list(cc=0, a=as,k=kss), trace=tr, control = list(maxiter = 500)), 
+#		error=function(e) NULL
+#		)
+#}
+
 
 mod1.nls <- function(city_r,i,ks) {
 	#print(i)
@@ -50,97 +59,68 @@ mod1.nls <- function(city_r,i,ks) {
 	rvec <- rvec [indx]
 	
 	d <- log10(dvec)
+	# just do on d
+	#d <- dvec
 	#mod <- tryCatch( nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.8,k=ks), trace=F), error=function(e) NULL)
 	#mod <- tryCatch( nls (rvec ~ cc + a * exp(-((d - min(d)/k)^2)), start=list(cc=0, a=0.8,k=ks), trace=F), error=function(e) NULL)
-	mod <- get_mod(rvec, d, 0.8, ks, F)
-	if (is.null(mod)) { mod <- get_mod(rvec, d, 2,1,F)		}
+	mod <- NULL
+	
+	if (i == 112) {
+		if (is.null(mod)) { mod <- get_mod(rvec, d, 0.2,1,F)			}
+	}
+	if (i == 74) {
+		if (is.null(mod)) { mod <- get_mod(rvec, d, 2,1,F)			}
+	}
+	if (is.null(mod)) { mod <- get_mod(rvec, d, 0.2,2,F)			}
 	if (is.null(mod)) { mod <- get_mod(rvec, d, 1.76,0.38,F)		}
 	if (is.null(mod)) { mod <- get_mod(rvec, d, 0.8,0.5,F)}
 	if (is.null(mod)) { mod <- get_mod(rvec, d, 0.8,0.6,F)			}
 	if (is.null(mod)) { mod <- get_mod(rvec, d, 0.8,0.3,F)			}
-	if (is.null(mod)) { mod <- get_mod(rvec, d, 0.2,2,F)			}
-	if (is.null(mod)) { mod <- get_mod(rvec, d, 0.2,1,F)			}
-	if (is.null(mod)) { mod <- get_mod(rvec, d, 0.1,1,F)			}
-	if (is.null(mod)) { mod <- get_mod(rvec, d, 0.8,1.2,F)			}
-	if (is.null(mod)) { mod <- get_mod(rvec, d, 0.2,0.01,F)			}
-	if (is.null(mod)) { mod <- get_mod(rvec, d, 0.8,0.01010101,F)	}
-	if (is.null(mod)) { mod <- get_mod(rvec, d, 0.01,0.2,F)			}
-	if (is.null(mod)) { mod <- get_mod(rvec, d, 0.1,0.4,F)			}
-	if (is.null(mod)) { mod <- get_mod(rvec, d, 0.3,2,F)			}
-	if (is.null(mod)) {	mod <- get_mod(rvec, d, 0.4,2,F)			}
-	if (is.null(mod)) {mod <- get_mod(rvec, d, 0.04,2,F)	}
-	if (is.null(mod)) {mod <- get_mod(rvec, d, 0.21,2,F)	}
-	if (is.null(mod)) {
-		print(c(i,0.03,0.5))
-		mod <- get_mod(rvec, d, 0.03,0.5,F)	}
-	if (is.null(mod)) {
-		print(c(i,0.8,2))
-		mod <- get_mod(rvec, d, 0.8,2,F)	}
-	if (is.null(mod)) {
-		print(c(i,0.16,0.01))
-		mod <- get_mod(rvec, d, 0.16,0.01,F)	}
-	if (is.null(mod)) {
-		print(c(i,0.97,0.3))
-		mod <- get_mod(rvec, d, 0.97,0.3,F)	}
-	if (is.null(mod)) {
-		print(c(i,0.9,0.3))
-		mod <- get_mod(rvec, d, 0.9,0.3,F)	}
-	if (is.null(mod)) {
-		print(c(i,0.9,0.01))
-		mod <- get_mod(rvec, d, 0.9,0.01,F)	}
+	
+	if (is.null(mod)) {#print(c("SPECIAL", i,0.18754798,2.50594915))
+			mod <- get_mod(rvec, d, 0.18754798,2.50594915,F)	}
+	if (is.null(mod)) { #print(c("SPECIAL", i,2,1))
+		mod <- get_mod(rvec, d, 2,1,F)		}
+	if (is.null(mod)) { #print(c(i,"1 MEAN D"))
+		mod <- get_mod(rvec, d, 1,mean(d),F)			}
+	if (is.null(mod)) { #print(c(i,"MEAN"))
+		mod <- get_mod(rvec, d, mean(rvec),mean(d),F)			}
+	#get_mod(rvec, d, 0.9, mean(d), T)
 		
 			k <- 10 ^ summary (mod)$parameters [3]
+			# no longer log10 values
+			#k <- summary (mod)$parameters [3]
 }
 
-#mod <- nls (rvec ~ cc + a * exp(-((d - min(d))/k)^2), start=list(cc=0, a=0.2446811,k=1.03989), trace=T, control = list(maxiter = 50,minFactor=1e-5 ))
-#xx<-seq(0,1,0.01)
-#kk <- seq(1,0,-0.1)
-#for (i in xx) {
-	#print(i)
-	#for (kv in kk){
-		#print(k)
-		#print(i);
-#			mod <- tryCatch(nls (rvec ~ cc + a * exp(-((d - min(d))/k)^2), start=list(cc=0, a=i,k=1.03989), trace=F, control = list(maxiter = 100, minFactor=1/2064)), error=function(e) NULL)
-#		if (!is.null(mod)){
-#			print (c(i, k))
-#			print(10 ^ summary (mod)$parameters [3])#
-#		}
-#		#}
-#}
+
 print("I AM NUMBER ONE")
 ntc_k <- numeric()
 for (i in 1:332) {
-	if (day %in% c("mon", "sun") & i == 112 ) {
-			print(i)
-			ntc_k <- c(ntc_k, 1)
-		} else {
-			x <- mod1.nls(ntc, i, 0.7)
+	
+			#print(i)
+			x <- mod1.nls(ntc, i, 2)
 			ntc_k <- c(ntc_k, x)
-		}
-		if (x >= 22) {
+		
+		if (x < 0) {
 			print(c(i,x))
 		}
 }
 print("I AM NUMBER TWO")
 ntr_k <- numeric()
 for (i in 1:332) {
-	if (day %in% c("mon", "sun") & i == 112 ) {
-		ntr_k <- c(ntr_k, 1)
-		} else {
-			x <- mod1.nls(ntr, i, 0.7)
+			#print(i)
+			x <- mod1.nls(ntr, i, 2)
 			ntr_k <- c(ntr_k, x)
-		}
+		
 }
 print("I AM NUMBER THREE")
 nfr_k <- numeric()
 for (i in 1:332) {
-	if (day %in% c("mon", "sun") & i == 112 ) {
-		nfr_k <- c(nfr_k, 1)
-		} else {
+			#print(i)
 			x <- mod1.nls(nfr, i, 2)
 			nfr_k <- c(nfr_k, x)
-		}
-		if (x >= 30){
+		
+		if (x < 0){
 			print(c(i,x))
 		}	
 }
@@ -149,13 +129,11 @@ for (i in 1:332) {
 print("I AM NUMBER fours")
 nfc_k <- numeric()
 for (i in 1:332) {
-	if (day %in% c("mon", "sun") & i == 112 ) {
-		nfc_k <- c(nfc_k, 1)
-		} else {
-			x <- mod1.nls(nfc, i, 0.7)
+			#print(i)
+			x <- mod1.nls(nfc, i, 2)
 			nfc_k <- c(nfc_k, x)
-		}
-		if (x >= 30){
+		
+		if (x < 0){
 			print(c(i,x))
 		}
 }
@@ -219,7 +197,7 @@ make_maps <- function(kv){
 	clip_grid = grd[!is.na(over(grd, geometry(shape_p))),]
 	
 	
-	kr = autoKrige(log10(kval)~1, ks_proj, clip_grid) 
+	kr = autoKrige(kval~1, ks_proj, clip_grid) 
 }
 
 
@@ -267,10 +245,10 @@ nyc_sts.p <- spTransform(nyc_sts, CRS(NAD83))
 nyc_sts.d <- as.data.frame(nyc_sts.p)
 
 sts <- geom_point(data=nyc_sts.d, aes(x=long, y=lat),shape=3, colour="white", size=0.8)
-plot1 <- ggplot() + geom_raster(data=p1.kr, aes(x=x,y=y, fill=10^(var1.pred))) + sts + 
-      scale_fill_gradientn(limits=c(0,12), colours=bpy.colors(50),na.value = "transparent", name="k-value (km)")  + coord_fixed() + theme(legend.key.height=unit(5,"lines"))
-plot2 <- ggplot() + geom_raster(data=p3.kr, aes(x=x,y=y, fill=10^var1.pred)) + sts +
-      scale_fill_gradientn(limits=c(0,12), colours=bpy.colors(50),na.value = "transparent", name="k-value (km)")  + coord_fixed() + theme(legend.key.height=unit(5,"lines"))
+plot1 <- ggplot() + geom_raster(data=p1.kr, aes(x=x,y=y, fill=var1.pred)) + sts + 
+      scale_fill_gradientn(limits=c(1.4,2.8), colours=bpy.colors(50),na.value = "transparent", name="k-value (km)")  + coord_fixed() + theme(legend.key.height=unit(5,"lines"))
+plot2 <- ggplot() + geom_raster(data=p3.kr, aes(x=x,y=y, fill=var1.pred)) + sts +
+      scale_fill_gradientn(limits=c(1.4,2.8), colours=bpy.colors(50),na.value = "transparent", name="k-value (km)")  + coord_fixed() + theme(legend.key.height=unit(5,"lines"))
 
 png (file=paste("../results/kvals/jpeg/ggplot_nyc_ok_side_by_",day,"_krig.png",sep=""), width=12, height=10, type="cairo", res=150, units="in")
 	 grid.arrange(
